@@ -2,7 +2,7 @@ interface SidebarProps {
     searchQuery: string; 
     setSearchQuery: (query: string) => void; 
     categoryFilters: string[];
-    setCategoryFilters: (filters: string[]) => void;
+    setCategoryFilters: React.Dispatch<React.SetStateAction<string[]>>;
     statusFilter: string;
     setStatusFilter: (status: string) => void;
     sortType: string;

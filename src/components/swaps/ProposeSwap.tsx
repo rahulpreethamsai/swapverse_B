@@ -63,7 +63,6 @@ const ProposeSwap: React.FC<ProposeSwapProps> = ({ itemRequestedId, itemOwnerId,
             const { data } = await API.post('/swaps', swapData);
 
             setSuccessMsg(data.message || "Swap Request Sent Successfully!");
-            // 🚨 You will need to refresh the parent page's swap data here
             setTimeout(onClose, 2000); 
 
         } catch (err: any) {
@@ -87,7 +86,7 @@ const ProposeSwap: React.FC<ProposeSwapProps> = ({ itemRequestedId, itemOwnerId,
                 
                     <div className="bg-gray-700/50 p-3 rounded-md">
                         <label className="block text-sm font-medium mb-1">Item You Want:</label>
-                        {/* Note: This should display the item's NAME, not ID, for better UX */}
+                        
                         <p className="font-semibold text-white truncate">{itemRequestedId}</p> 
                     </div>
 
