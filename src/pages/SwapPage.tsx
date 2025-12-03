@@ -4,8 +4,8 @@ import Navbar from "../components/layout/Navbar";
 import API from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
 import { motion } from "framer-motion";
-import DisputeForm from "../components/swaps/DisputeSwap";
-import ReviewForm from "../components/swaps/ReviewSwap";
+import DisputeForm from "../components/swaps/DisputeSwap"; 
+import ReviewForm from "../components/swaps/ReviewSwap"; 
 
 interface UserSummary {
     _id: string;
@@ -73,9 +73,13 @@ function SwapPage() {
         try {
             setLoading(true);
             const endpoint = `/swaps/${swapId}/${actionType}`;
+
             const { data } = await API.post(endpoint); 
+            
             alert(data.message);
-            await fetchUserSwaps();
+
+            await fetchUserSwaps(); 
+
         } catch (err: any) {
             alert(err.response?.data?.message || `Failed to ${actionType} swap.`);
         } finally {
@@ -97,11 +101,9 @@ function SwapPage() {
             </div>
         );
     }
-
     if (error) {
         return <p className="text-red-500 text-center mt-20">{error}</p>;
     }
-
     if (!user) {
         return (
             <div className="min-h-screen p-5 bg-black">
@@ -158,6 +160,8 @@ function SwapPage() {
                                 const isProposer = swap.fromUserId._id === user._id;
                                 const partnerId = isOwner ? swap.fromUserId._id : swap.toUserId._id;
                                 const partnerName = isOwner ? swap.fromUserId.name : swap.toUserId.name;
+                                
+                           
                                 const isReadyForReview = swap.status === 'closed' && isProposer;
                                 const canBeDisputed = ['in_escrow', 'picked_up', 'returned'].includes(swap.status);
                                 
@@ -197,6 +201,7 @@ function SwapPage() {
                                         </div>
 
                                         <div className="mt-4 flex gap-3 justify-end">
+                                  
                                             {isReadyForReview && (
                                                 <button 
                                                     onClick={() => setReviewModal({ isOpen: true, swapId: swap._id, toUserId: partnerId })}
@@ -220,15 +225,11 @@ function SwapPage() {
                                                     <button 
                                                         onClick={() => handleSwapAction(swap._id, 'accept')}
                                                         className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition"
-                                                    >
-                                                        Accept
-                                                    </button>
+                                                    >Accept</button>
                                                     <button 
                                                         onClick={() => handleSwapAction(swap._id, 'cancel')}
                                                         className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
-                                                    >
-                                                        Decline
-                                                    </button>
+                                                    >Decline</button>
                                                 </>
                                             )}
                                             
@@ -236,36 +237,26 @@ function SwapPage() {
                                                 <button 
                                                     onClick={() => handleSwapAction(swap._id, 'cancel')}
                                                     className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-500 transition"
-                                                >
-                                                    Withdraw Proposal
-                                                </button>
+                                                >Withdraw Proposal</button>
                                             )}
-
-                                            {activeTab === 'active' && swap.status === 'in_escrow' && (
+                                            
+                                            {activeTab === 'active' && swap.status === 'in_escrow' && isOwner && (
                                                 <button 
                                                     onClick={() => handleSwapAction(swap._id, 'confirmPickup')}
                                                     className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
-                                                >
-                                                    Confirm Pickup
-                                                </button>
+                                                >Confirm Pickup</button>
                                             )}
-
                                             {activeTab === 'active' && swap.status === 'picked_up' && (
                                                 <button 
                                                     onClick={() => handleSwapAction(swap._id, 'confirmReturn')}
                                                     className="bg-purple-500 text-white px-4 py-2 rounded-md hover:bg-purple-600 transition"
-                                                >
-                                                    Confirm Return
-                                                </button>
+                                                >Confirm Return</button>
                                             )}
-
                                             {activeTab === 'active' && swap.status === 'returned' && (
                                                 <button 
                                                     onClick={() => handleSwapAction(swap._id, 'finish')}
                                                     className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition"
-                                                >
-                                                    Finalize Swap
-                                                </button>
+                                                >Finalize Swap</button>
                                             )}
                                         </div>
                                     </motion.div>
