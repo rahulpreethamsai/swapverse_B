@@ -1,107 +1,110 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import API from "../services/api";
-import { useAuth } from "../contexts/AuthContext";
 import Navbar from "../components/layout/Navbar";
-import ProposeSwap from "../components/swaps/ProposeSwap"; 
+import API from "../services/api";
+import { Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
-interface Owner {
-    _id: string, 
-    name: string,
-    email: string
-}
 
 interface Item {
     _id: string;
     name: string;
     description?: string;
     category?: string;
-    estimatedValue?: number;
-    condition?: string;
+    estimatedValue: number;
+    condition: string;
     images: string[];
-    owner?: Owner;
-    status: string;
-    date?: string;
+    owner: string; 
+    status: "available" | "swapped" | "underReview";
 }
 
-interface UserSwap {
+
+interface OutgoingSwap {
     _id: string;
-    itemRequestedId: { _id: string }; 
-    status: string;
+    status: "proposed" | "accepted" | "in_escrow" | "closed" | "cancelled";
+    itemRequestedId: { name: string }; 
+    toUserId: { name: string }; 
 }
 
-const DetailRow = ({ label, value, status }: { label: string, value: any, status?: string }) => {
-    let colorClass = "text-gray-300";
-    if (status === "available") {
-        colorClass = "text-green-400 font-bold";
-    } else if (status === "swapped" || status === "underReview") {
-        colorClass = "text-yellow-400 font-bold";
-    }
-    return (
-        <div className="flex justify-between items-center py-1">
-            <span className="font-medium text-white">{label}:</span>
-            <span className={colorClass}>{value}</span>
-        </div>
-    );
-}
-
-function ItemDetails() {
-    const { id } = useParams<{ id: string }>();
-    const [item, setItem] = useState<Item | null>(null);
-    const [error, setError] = useState<string>("");
-    const [loading, isLoading] = useState<boolean>(true);
-    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-    
-    const [hasActiveProposal, setHasActiveProposal] = useState(false); 
-    
-    const { user } = useAuth();
+function MyItemsPage() {
+    const [userItems, setUserItems] = useState<Item[]>([]);
+    const [outgoingSwaps, setOutgoingSwaps] = useState<OutgoingSwap[]>([]); 
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState<'inventory' | 'requests'>('inventory');
+    const { user } = useAuth(); 
 
     useEffect(() => {
-        if (!id || !user) {
-            isLoading(false);
-            return;
-        }
-
-        async function fetchData() {
-            isLoading(true);
+        async function fetchUserItems() {
             try {
-                const { data: itemData } = await API.get(`/items/${id}`);
-                setItem(itemData.item || null);
-
-                const { data: swapData } = await API.get('/swaps/my-swaps'); 
-                
-                const activeProposal = swapData.swaps.some((swap: UserSwap) => 
-                    swap.itemRequestedId?._id === id && 
-                    swap.status !== 'cancelled' && 
-                    swap.status !== 'closed' &&
-                    swap.status !== 'disputed' 
-                );
-                setHasActiveProposal(activeProposal);
-
+                const { data } = await API.get('items/my-items');
+                if (data.success && data.myItems) {
+                    setUserItems(data.myItems || [])
+                } else {
+                    setError("Item Failed To Load!!")
+                }
             } catch (err: any) {
-                setError(err.response?.data?.message || "Failed to load details.");
+                console.error("Error In Fetching", err);
+                setError(err.message || "Failed to fetch items");
             } finally {
-                isLoading(false);
+                setLoading(false)
             }
         };
-        fetchData();
-    }, [id, user]);
 
-    const handleOpenModal = () => setIsModalOpen(true);
-    const handleCloseModal = () => setIsModalOpen(false);
+        async function fetchOutgoingSwaps() {
+            try {
+                const { data } = await API.get('/swaps/my-swaps');
 
-    const isOwner = user && item && item.owner && user._id === item.owner._id;
-    const canPropose = user && item && item.status === "available" && !isOwner && !hasActiveProposal;
-    const notLoggedIn = !user;
+                const sentSwaps = (data.swaps || [])
+                    .filter((s: any) => s.fromUserId._id === user?._id)
+                    .map((s: any) => ({
+                        _id: s._id,
+                        status: s.status,
+                        itemRequestedId: { name: s.itemRequestedId.name },
+                        toUserId: { name: s.toUserId.name }
+                    }));
+
+                setOutgoingSwaps(sentSwaps);
+
+            } catch (err) {
+                console.error("Failed to fetch outgoing requests", err);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchUserItems();
+        if (user) fetchOutgoingSwaps();
+
+    }, [user]);
+
+    const handleDelete = async (itemId: string) => {
+        if (!window.confirm("Are you sure you want to delete this item? This action is irreversible.")) return;
+
+        try {
+
+            await API.delete(`/items/${itemId}`);
+
+            setUserItems(prev => prev.filter(item => item._id !== itemId));
+            alert("Item deleted successfully!");
+        } catch (err: any) {
+            console.error("Delete Error", err);
+            alert(`Failed to delete item: ${err.response?.data?.message || 'Server error'}`);
+        }
+    };
 
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-black">
-                <img src="https://media.tenor.com/UnFx-k_lSckAAAAM/amalie-steiness.gif" alt="Loading" className="w-20 h-20" />
+                <img
+                    src="https://media.tenor.com/UnFx-k_lSckAAAAM/amalie-steiness.gif"
+                    alt="Loading"
+                    className="w-20 h-20"
+                />
             </div>
         );
     }
-    if (error || !item) {
+
+    if (error) {
         return (
             <div className="min-h-screen p-5 bg-black">
                 <Navbar />
@@ -111,79 +114,118 @@ function ItemDetails() {
     }
 
     return (
-        <div className="min-h-screen w-full bg-black text-white p-5">
+        <div className="min-h-screen w-full bg-black p-5">
             <Navbar />
-            <div className="mt-10 max-w-6xl mx-auto p-8 bg-[#1F1F1F] rounded-xl shadow-2xl">
-                <h1 className="text-4xl font-extrabold text-blue-200 mb-6">{item.name}</h1>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                    <div className="space-y-4">
-                        <img src={item.images[0]} alt={item.name} className="w-full h-80 object-contain rounded-lg shadow-xl" />
-                        <div className="flex gap-2 overflow-x-auto">
-                            {item.images.map((imgUrl, index) => (
-                                <img key={index} src={imgUrl} alt={`Image ${index + 1}`} className="w-20 h-20 object-cover rounded-md cursor-pointer hover:border-2 border-[#F4C430]" />
-                            ))}
-                        </div>
-                    </div>
 
-                    <div className="space-y-4">
-                        <p className="text-lg text-gray-300 border-b border-gray-700 pb-2">{item.description}</p>
-                        <DetailRow label="Category" value={item.category} />
-                        <DetailRow label="Condition" value={item.condition?.toUpperCase()} />
-                        <DetailRow label="Estimated Value" value={`₹${item.estimatedValue?.toLocaleString()}`} />
-                        <DetailRow label="Status" value={item.status.toUpperCase()} status={item.status} />
+            <div className="flex justify-between items-center py-5 px-5">
+                <h1 className="text-3xl font-bold text-white">Your Inventory & Requests</h1>
 
-                        <div className="pt-4 border-t border-gray-700">
-                            <h3 className="text-xl font-semibold mb-2">Owner Details</h3>
-                            <DetailRow label="Name" value={item.owner?.name} />
-                            <DetailRow label="Email" value={item.owner?.email} /> 
-                        </div>
-
-
-                        
-                        {canPropose && (
-                            <button className="mt-6 w-full bg-blue-200 text-black font-bold py-3 rounded-lg hover:bg-blue-100 transition duration-200 cursor-pointer" onClick={handleOpenModal}>
-                                PROPOSE A SWAP
-                            </button>
-                        )}
-                        
-                        {hasActiveProposal && (
-                            <div className="mt-4 p-3 text-center bg-yellow-900/50 text-yellow-300 rounded-lg font-semibold">
-                                You have a pending or active proposal for this item. Check the SWAPS tab.
-                            </div>
-                        )}
-
-                        {isOwner && (
-                            <Link to={`/items/edit/${item._id}`}>
-                                <button className="mt-6 w-full bg-blue-200 text-black font-bold py-3 rounded-lg hover:bg-blue-100 transition duration-200 cursor-pointer">
-                                    EDIT ITEM
-                                </button> 
-                            </Link>
-                        )}
-                        
-                        {isOwner && (
-                            <div className="mt-4 p-3 text-center bg-blue-900/50 text-blue-300 rounded-lg">
-                                This is your item. Manage it or edit its details.
-                            </div>
-                        )}
-
-                        {notLoggedIn && (
-                            <div className="mt-4 p-3 text-center bg-red-900/50 text-red-300 rounded-lg">
-                                <Link to="/auth" className="underline font-semibold">Sign In</Link> to propose a swap for this item.
-                            </div>
-                        )}
-                    </div>
-                </div>
+                <Link to="/items/new">
+                    <button className="font-semibold bg-[#F4C430] text-black px-4 py-2 rounded-md hover:scale-105 transition duration-300">
+                        + ADD NEW ITEM
+                    </button>
+                </Link>
             </div>
-            
-            {isModalOpen && item && item.owner && (
-                <ProposeSwap
-                    itemRequestedId={item._id}
-                    itemOwnerId={item.owner._id}
-                    onClose={handleCloseModal}
-                />
-            )}
+
+            <div className="flex flex-row gap-5 p-5">
+
+                <div className="w-1/4 bg-[#1F1F1F] shadow-2xl rounded-lg p-5 h-min sticky top-5">
+                    <h2 className="text-xl font-bold text-white mb-4">Navigation</h2>
+                    <button
+                        onClick={() => setActiveTab('inventory')}
+                        className={`w-full text-left p-3 rounded-lg font-semibold transition-colors mb-2 ${activeTab === 'inventory' ? 'bg-[#F4C430] text-black' : 'text-gray-300 hover:bg-gray-700'}`}
+                    >
+                        My Listings ({userItems.length})
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('requests')}
+                        className={`w-full text-left p-3 rounded-lg font-semibold transition-colors ${activeTab === 'requests' ? 'bg-[#F4C430] text-black' : 'text-gray-300 hover:bg-gray-700'}`}
+                    >
+                        Proposals Sent ({outgoingSwaps.length})
+                    </button>
+                </div>
+
+                <aside className="bg-[#1F1F1F] shadow-2xl rounded-lg p-5 w-3/4">
+
+                    {activeTab === 'inventory' && (
+                        <div className="space-y-6">
+                            <h2 className="text-2xl font-bold text-white border-b border-gray-700 pb-3">My Item Inventory</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {userItems.length > 0 ? (
+                                    userItems.map((item) => (
+                                        <div
+                                            key={item._id}
+                                            className="bg-gray-800 rounded-xl overflow-hidden shadow-lg transition-all hover:shadow-white/20"
+                                        >
+                                            <Link to={`/itemDetails/${item._id}`}>
+                                                <img
+                                                    src={item.images?.[0]}
+                                                    alt={item.name}
+                                                    className="w-full h-40 object-cover cursor-pointer"
+                                                />
+                                            </Link>
+                                            <div className="p-4">
+                                                <h3 className="text-xl font-bold text-white truncate">{item.name}</h3>
+                                                <p className="text-sm text-gray-400">Value: ₹{item.estimatedValue?.toLocaleString()}</p>
+                                                <p className="text-sm font-semibold mt-1" style={{ color: item.status === 'available' ? '#4ADE80' : '#FBBF24' }}>
+                                                    Status: {item.status.toUpperCase()}
+                                                </p>
+
+                                                <div className="mt-4 flex gap-3">
+                                                    <Link to={`/items/edit/${item._id}`} className="flex-1">
+                                                        <button className="w-full bg-blue-500 text-white text-sm py-1 rounded-md hover:bg-blue-600">
+                                                            EDIT
+                                                        </button>
+                                                    </Link>
+                                                    <button
+                                                        onClick={() => handleDelete(item._id)}
+                                                        className="flex-1 bg-red-500 text-white text-sm py-1 rounded-md hover:bg-red-600"
+                                                    >
+                                                        DELETE
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="text-gray-400 col-span-full">You have not posted any items yet. Start swapping!</p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'requests' && (
+                        <div className="space-y-6">
+                            <h2 className="text-2xl font-bold text-white border-b border-gray-700 pb-3">Proposals Sent ({outgoingSwaps.length})</h2>
+                            <div className="space-y-4">
+                                {outgoingSwaps.length > 0 ? (
+                                    outgoingSwaps.map(req => (
+                                        <div key={req._id} className="p-4 bg-gray-800 rounded-lg flex justify-between items-center">
+                                            <p className="text-white">
+                                                Requested: <span className="font-semibold">{req.toUserId.name}</span>
+                                            </p>
+                                            <div className="flex items-center gap-3">
+                                                <span className={`px-3 py-1 text-xs rounded-full font-bold ${req.status === 'proposed' ? 'bg-yellow-800 text-yellow-300' : req.status === 'accepted' ? 'bg-green-800 text-green-300' : 'bg-red-800 text-red-300'}`}>
+                                                    {req.status.toUpperCase()}
+                                                </span>
+                                                {req.status === 'proposed' && (
+                                                    <button className="bg-red-500 text-white text-sm px-3 py-1 rounded-md hover:bg-red-600">
+                                                        Cancel Request
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="text-gray-400">You haven't sent any swap proposals yet.</p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </aside>
+            </div>
         </div>
-    )
+    );
 }
 
-export default ItemDetails;
+export default MyItemsPage;
