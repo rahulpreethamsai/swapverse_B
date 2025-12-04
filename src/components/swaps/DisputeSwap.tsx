@@ -55,7 +55,8 @@ const DisputeForm: React.FC<DisputeFormProps> = ({ swapId, onClose, onDisputeSub
 
         try {
 
-            await API.post(`/disputes/${swapId}`, {
+            await API.post('/disputes', {
+                swapId,
                 evidence: evidenceArray
             });
 
