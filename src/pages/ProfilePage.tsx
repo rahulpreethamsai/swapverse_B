@@ -102,7 +102,7 @@ function Profile() {
                     transition={{ duration: 0.8 }}
                     className="text-center"
                 >
-                    <h1 className="text-3xl font-bold text-[#F4C430] mb-4">
+                    <h1 className="text-3xl font-bold text-blue-200 mb-4">
                         Please Log In
                     </h1>
                     <Link to="/auth">
@@ -177,7 +177,7 @@ function Profile() {
                             cx="48"
                             cy="48"
                             r="44"
-                            stroke="#F4C430"
+                            stroke= 'white'
                             strokeWidth="6"
                             fill="none"
                             strokeLinecap="round"

@@ -6,7 +6,7 @@ function Navbar() {
   const { isLoggedIn } = useAuth();
 
   return (
-    <div className="bg-[#1F1F1F] text-white rounded-full shadow-2xl sticky z-50 flex justify-around items-center m-auto p-3 w-[99%]">
+    <div className="bg-[#1F1F1F] text-white rounded-full shadow-2xl sticky top-0 z-50 flex justify-around items-center m-auto p-3 w-[99%]">
       <Link to="/" className="flex items-center gap-2">
         <img
           src="https://www.shutterstock.com/shutterstock/videos/1078496810/thumb/1.jpg?ip=x480"

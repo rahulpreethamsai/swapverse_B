@@ -121,7 +121,7 @@ function MyItemsPage() {
                 <h1 className="text-3xl font-bold text-white">Your Inventory & Requests</h1>
 
                 <Link to="/items/new">
-                    <button className="font-semibold bg-[#F4C430] text-black px-4 py-2 rounded-md hover:scale-105 transition duration-300">
+                    <button className="font-semibold bg-blue-200 text-black px-4 py-2 rounded-md hover:scale-105 transition duration-300">
                         + ADD NEW ITEM
                     </button>
                 </Link>
@@ -133,13 +133,13 @@ function MyItemsPage() {
                     <h2 className="text-xl font-bold text-white mb-4">Navigation</h2>
                     <button
                         onClick={() => setActiveTab('inventory')}
-                        className={`w-full text-left p-3 rounded-lg font-semibold transition-colors mb-2 ${activeTab === 'inventory' ? 'bg-[#F4C430] text-black' : 'text-gray-300 hover:bg-gray-700'}`}
+                        className={`w-full text-left p-3 rounded-lg font-semibold transition-colors mb-2 ${activeTab === 'inventory' ? 'bg-blue-200 text-black' : 'text-gray-300 hover:bg-gray-700'}`}
                     >
                         My Listings ({userItems.length})
                     </button>
                     <button
                         onClick={() => setActiveTab('requests')}
-                        className={`w-full text-left p-3 rounded-lg font-semibold transition-colors ${activeTab === 'requests' ? 'bg-[#F4C430] text-black' : 'text-gray-300 hover:bg-gray-700'}`}
+                        className={`w-full text-left p-3 rounded-lg font-semibold transition-colors ${activeTab === 'requests' ? 'bg-blue-200 text-black' : 'text-gray-300 hover:bg-gray-700'}`}
                     >
                         Proposals Sent ({outgoingSwaps.length})
                     </button>
@@ -200,7 +200,7 @@ function MyItemsPage() {
                             <div className="space-y-4">
                                 {outgoingSwaps.length > 0 ? (
                                     outgoingSwaps.map(req => (
-                                        <div key={req._id} className="p-4 bg-gray-800 rounded-lg flex justify-between items-center">
+                                        <div key={req._id} className="p-4 bg-black rounded-lg flex justify-between items-center">
                                             <p className="text-white">
                                                 Requested: <span className="font-semibold">{req.toUserId.name}</span>
                                             </p>

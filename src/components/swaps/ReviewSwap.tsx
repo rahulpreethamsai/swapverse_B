@@ -41,7 +41,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ swapId, toUserId, onClose, onRe
     return (
         <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50">
             <div className="bg-[#1F1F1F] p-8 rounded-xl shadow-2xl w-full max-w-md text-white">
-                <h2 className="text-2xl font-bold text-[#F4C430] mb-4">Leave Review</h2>
+                <h2 className="text-2xl font-bold text-white mb-4">Leave Review</h2>
                 <p className="text-sm text-gray-400 mb-4">Rate your swap partner out of 5 stars.</p>
 
                 <form onSubmit={handleSubmit} className="space-y-4">

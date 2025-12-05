@@ -136,12 +136,12 @@ function SwapPage() {
                         <button 
                             key={key}
                             onClick={() => setActiveTab(key as ActiveTab)}
-                            className={`w-full text-left p-3 rounded-lg font-semibold transition-colors mb-2 capitalize flex justify-between items-center ${activeTab === key ? 'bg-[#F4C430] text-black' : 'text-gray-300 hover:bg-gray-700'}`}
+                            className={`w-full text-left p-3 rounded-lg font-semibold transition-colors mb-2 capitalize flex justify-between items-center ${activeTab === key ? 'bg-blue-200 text-black' : 'text-gray-300 hover:bg-gray-700'}`}
                         >
                             <span>
                                 {key === 'incoming' ? 'Incoming Proposals' : key === 'outgoing' ? 'Proposals Sent' : key}
                             </span>
-                            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${activeTab === key ? 'bg-black text-[#F4C430]' : 'bg-gray-600'}`}>
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${activeTab === key ? 'bg-black text-white' : 'bg-gray-600'}`}>
                                 {list.length}
                             </span>
                         </button>
@@ -171,7 +171,7 @@ function SwapPage() {
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ duration: 0.3 }}
-                                        className="p-5 bg-gray-800 rounded-xl shadow-md border border-gray-700"
+                                        className="p-5 bg-black rounded-xl shadow-md border border-gray-700"
                                     >
                                         <div className="flex justify-between items-start border-b border-gray-600 pb-3 mb-3">
                                             <div className="text-sm">
@@ -190,7 +190,7 @@ function SwapPage() {
                                         <div className="flex items-center gap-4">
                                             <img src={swap.itemRequestedId.images[0]} alt={swap.itemRequestedId.name} className="w-16 h-16 object-cover rounded-md border border-gray-500" />
                                             <div className="flex-grow">
-                                                <p className="font-bold text-lg text-[#F4C430]">{swap.itemRequestedId.name} (Requested)</p>
+                                                <p className="font-bold text-lg text-white">{swap.itemRequestedId.name} (Requested)</p>
                                                 <p className="text-sm text-gray-300">
                                                     Offer: 
                                                     <span className="font-semibold ml-1">

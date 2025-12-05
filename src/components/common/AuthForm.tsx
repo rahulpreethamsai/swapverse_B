@@ -87,7 +87,7 @@ function AuthForm() {
         <div className="w-80 h-80 md:w-96 md:h-96 bg-[#1F1F1F] rounded-full flex flex-col justify-center items-center text-center shadow-2xl p-6 hover:scale-105 transition-all duration-300">
           <div className="flex flex-col items-center gap-4">
             <img
-              src="https://www.logoground.com/uploads6/dv6y2020130322020-01-162886054Infinity-Exchange-Logo.jpg"
+              src="https://www.shutterstock.com/shutterstock/videos/1078496810/thumb/1.jpg?ip=x480"
               alt="logo"
               className="rounded-full w-20 h-20 border-4 border-white"
             />
